@@ -182,3 +182,14 @@ window.addEventListener("keydown", (e) => {
     void requestSave();
   }
 });
+
+void (async () => {
+  try {
+    const initial = await invoke<string | null>("get_initial_folder");
+    if (initial) {
+      await tree.openDirectory(initial);
+    }
+  } catch (err) {
+    console.error("get_initial_folder failed:", err);
+  }
+})();

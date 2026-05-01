@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
+    "tauri:dev:here": "SCRUBB_INITIAL_FOLDER=\"$PWD\" tauri dev",
     "tauri:build": "tauri build",
     "test": "vitest run",
     "test:watch": "vitest"

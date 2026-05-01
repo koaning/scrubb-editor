@@ -19,10 +19,16 @@ A desktop code editor with drag-to-scrub numeric literals.
   - `numberScanner.test.ts` — vitest unit tests for the scanner.
 - `src/sidebar/fileTree.ts` — folder browser panel.
 - `src/tabs/tabBar.ts` — tab bar for open files; manages Monaco model lifecycle.
-- `src-tauri/src/lib.rs` — Rust commands exposed to the frontend (`read_dir`, `read_file`, `write_file`).
+- `src-tauri/src/lib.rs` — Rust commands exposed to the frontend (`read_dir`, `read_file`, `write_file`, `get_initial_folder`).
 - `src-tauri/tauri.conf.json` — window/title/identifier/bundle settings.
 
 ## Tests
 
 - Run with `npm test`.
 - Tests live next to source as `*.test.ts`.
+
+## Startup folder
+
+- `get_initial_folder` (Rust) returns the first non-flag argv, falling back to `SCRUBB_INITIAL_FOLDER`, validated as an existing directory.
+- `main.ts` calls it once at startup and opens the folder via `FileTree.openDirectory`.
+- `npm run tauri:dev:here` sets `SCRUBB_INITIAL_FOLDER=$PWD` so dev launches with the project root pre-loaded.
