@@ -11,6 +11,7 @@
     "tauri:dev": "tauri dev",
     "tauri:dev:here": "SCRUBB_INITIAL_FOLDER=\"$PWD\" tauri dev",
     "tauri:build": "tauri build",
+    "tauri:build:app": "tauri build --bundles app",
     "test": "vitest run",
     "test:watch": "vitest"
   },
