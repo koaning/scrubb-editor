@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>scrubb</title>
+  </head>
+  <body>
+    <div id="app">
+      <aside id="sidebar">
+        <div id="sidebar-header">
+          <span id="sidebar-title">scrubb</span>
+          <button id="open-folder" title="Open folder (⌘O)">Open folder…</button>
+        </div>
+        <div id="folder-name"></div>
+        <div id="file-list"></div>
+      </aside>
+      <div id="tab-bar"></div>
+      <main id="editor-host"></main>
+      <footer id="status-bar">
+        <span id="status-path">no file</span>
+        <span id="status-tokens">0 scrubbables</span>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
