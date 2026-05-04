@@ -113,22 +113,29 @@ export class ScrubController {
       endPos.column
     );
 
-    this.opts.editor.executeEdits("scrub", [
-      { range, text: newText, forceMoveMarkers: true },
-    ]);
+    // Use pushEditOperations (not executeEdits) so we can supply both the
+    // before-cursor state (used on undo) and a cursor-state computer (used
+    // forward). Without this, Monaco's default undo selects the restored
+    // range — surfacing as a "phantom" highlight when the user hits Cmd+Z.
+    const beforeCursorState = this.opts.editor.getSelections();
+    model.pushEditOperations(
+      beforeCursorState,
+      [{ range, text: newText, forceMoveMarkers: true }],
+      () => {
+        const pos = model.getPositionAt(
+          this.dragStartOffset + newText.length
+        );
+        return [
+          new monaco.Selection(
+            pos.lineNumber,
+            pos.column,
+            pos.lineNumber,
+            pos.column
+          ),
+        ];
+      }
+    );
     this.dragCurrentLength = newText.length;
-
-    const collapsedPos = model.getPositionAt(
-      this.dragStartOffset + this.dragCurrentLength
-    );
-    this.opts.editor.setSelection(
-      new monaco.Selection(
-        collapsedPos.lineNumber,
-        collapsedPos.column,
-        collapsedPos.lineNumber,
-        collapsedPos.column
-      )
-    );
 
     this.opts.onLiveChange();
   };
