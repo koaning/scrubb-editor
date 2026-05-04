@@ -1,6 +1,7 @@
 import * as monaco from "monaco-editor";
 import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { ScrubDecorations } from "./scrub/decorations";
 import { ScrubController } from "./scrub/scrubController";
@@ -98,6 +99,7 @@ editor.setModel(null);
 const decorations = new ScrubDecorations(editor);
 let saveInFlight = false;
 let pendingSave = false;
+const lastSavedContent = new Map<string, string>();
 
 const tabBar = new TabBar({
   container: tabBarHost,
@@ -107,6 +109,14 @@ const tabBar = new TabBar({
     refreshDecorations();
     requestAnimationFrame(refreshDecorations);
     setTimeout(refreshDecorations, 100);
+  },
+  onOpen: (path, contents) => {
+    lastSavedContent.set(path, contents);
+    void invoke("watch_file", { path });
+  },
+  onClose: (path) => {
+    lastSavedContent.delete(path);
+    void invoke("unwatch_file", { path });
   },
 });
 
@@ -156,14 +166,16 @@ function refreshDecorations() {
 async function requestSave() {
   const path = tabBar.activePath();
   if (!path) return;
+  const contents = editor.getValue();
+  if (lastSavedContent.get(path) === contents) return;
   if (saveInFlight) {
     pendingSave = true;
     return;
   }
   saveInFlight = true;
-  const contents = editor.getValue();
   try {
     await invoke("write_file", { path, contents });
+    lastSavedContent.set(path, contents);
   } catch (err) {
     console.error("save failed:", err);
   } finally {
@@ -222,6 +234,29 @@ window.addEventListener("keydown", (e) => {
     e.preventDefault();
     focusSidebar();
   }
+});
+
+interface FileChangedPayload {
+  path: string;
+  kind: "modified" | "removed" | "error";
+  contents: string;
+}
+
+void listen<FileChangedPayload>("file-changed", (e) => {
+  const { path, kind, contents } = e.payload;
+  if (kind !== "modified") return;
+  const model = tabBar.findModel(path);
+  if (!model) return;
+  if (model.getValue() === contents) return;
+  const range = model.getFullModelRange();
+  model.pushStackElement();
+  model.pushEditOperations(
+    [],
+    [{ range, text: contents }],
+    () => null,
+  );
+  model.pushStackElement();
+  lastSavedContent.set(path, contents);
 });
 
 void (async () => {
