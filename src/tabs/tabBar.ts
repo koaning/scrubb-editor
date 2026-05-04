@@ -9,12 +9,16 @@ export interface TabBarOptions {
   container: HTMLElement;
   editor: monaco.editor.IStandaloneCodeEditor;
   onActivePathChange: (path: string | null) => void;
+  onOpen?: (path: string, contents: string) => void;
+  onClose?: (path: string) => void;
 }
 
 export class TabBar {
   private container: HTMLElement;
   private editor: monaco.editor.IStandaloneCodeEditor;
   private onActivePathChange: (path: string | null) => void;
+  private onOpen?: (path: string, contents: string) => void;
+  private onClose?: (path: string) => void;
   private tabs: OpenTab[] = [];
   private activeIndex = -1;
 
@@ -22,6 +26,8 @@ export class TabBar {
     this.container = opts.container;
     this.editor = opts.editor;
     this.onActivePathChange = opts.onActivePathChange;
+    this.onOpen = opts.onOpen;
+    this.onClose = opts.onClose;
     this.render();
   }
 
@@ -33,12 +39,14 @@ export class TabBar {
     }
     const model = monaco.editor.createModel(contents, languageId);
     this.tabs.push({ path, model });
+    this.onOpen?.(path, contents);
     this.activate(this.tabs.length - 1);
   }
 
   closeIndex(i: number) {
     const tab = this.tabs[i];
     if (!tab) return;
+    this.onClose?.(tab.path);
     tab.model.dispose();
     this.tabs.splice(i, 1);
     if (this.tabs.length === 0) {
@@ -57,12 +65,19 @@ export class TabBar {
   }
 
   closeAll() {
-    for (const tab of this.tabs) tab.model.dispose();
+    for (const tab of this.tabs) {
+      this.onClose?.(tab.path);
+      tab.model.dispose();
+    }
     this.tabs = [];
     this.activeIndex = -1;
     this.editor.setModel(null);
     this.onActivePathChange(null);
     this.render();
+  }
+
+  findModel(path: string): monaco.editor.ITextModel | null {
+    return this.tabs.find((t) => t.path === path)?.model ?? null;
   }
 
   next() {
