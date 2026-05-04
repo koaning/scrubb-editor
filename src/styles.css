@@ -10,6 +10,7 @@
   --border: #000;
   --accent: #6ed4ff;
   --accent-underline: rgba(89, 167, 255, 0.9);
+  --sidebar-width: 240px;
 }
 
 * { box-sizing: border-box; }
@@ -25,7 +26,7 @@ html, body, #app {
 
 #app {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: var(--sidebar-width) 1fr;
   grid-template-rows: 32px 1fr 22px;
   grid-template-areas:
     "sidebar tabs"
@@ -33,7 +34,26 @@ html, body, #app {
     "sidebar status";
 }
 
-#sidebar { grid-area: sidebar; display: flex; flex-direction: column; min-width: 0; background: var(--bg-sidebar); border-right: 1px solid var(--border); }
+#app.sidebar-collapsed { --sidebar-width: 0px; }
+#app.sidebar-collapsed #sidebar-resizer { display: none; }
+
+#sidebar { grid-area: sidebar; display: flex; flex-direction: column; min-width: 0; overflow: hidden; background: var(--bg-sidebar); border-right: 1px solid var(--border); position: relative; }
+#app.sidebar-collapsed #sidebar { border-right: none; }
+
+#sidebar-resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 4px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 10;
+}
+#sidebar-resizer:hover,
+body.sidebar-resizing #sidebar-resizer { background: var(--accent); }
+
+body.sidebar-resizing,
+body.sidebar-resizing * { cursor: ew-resize !important; user-select: none; }
 #tab-bar { grid-area: tabs; }
 #editor-host { grid-area: editor; position: relative; min-width: 0; background: var(--bg); }
 #status-bar { grid-area: status; }
@@ -80,6 +100,7 @@ html, body, #app {
   overflow: auto;
   flex: 1;
   padding: 4px 0;
+  outline: none;
 }
 
 .tree-row {
@@ -96,6 +117,7 @@ html, body, #app {
 }
 .tree-row:hover { background: var(--hover); }
 .tree-row.selected { background: var(--selected); color: #fff; }
+#file-list:focus-visible .tree-row.focused { box-shadow: inset 2px 0 0 var(--accent); }
 .tree-row .chevron {
   display: inline-block;
   width: 12px;
