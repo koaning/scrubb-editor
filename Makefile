@@ -15,13 +15,12 @@ help:
 icons: $(ICON_OUT)
 
 $(ICON_OUT): $(ICON_SRC)
-	npx tauri icon $(ICON_SRC) -o src-tauri/icons
-	@# Tauri's icon CLI emits assets for every platform; keep only the
-	@# files referenced by tauri.conf.json's bundle.icon array.
+	npx --yes @tauri-apps/cli icon $(ICON_SRC) -o src-tauri/icons
+	@# Tauri's icon CLI emits assets for every platform; drop the mobile
+	@# and Windows Store SKUs we don't ship, but keep icon.ico and the
+	@# PNGs that the Windows / Linux bundlers consume.
 	rm -rf src-tauri/icons/ios src-tauri/icons/android
-	rm -f src-tauri/icons/Square*Logo.png src-tauri/icons/StoreLogo.png \
-	      src-tauri/icons/icon.ico src-tauri/icons/icon.png \
-	      src-tauri/icons/64x64.png
+	rm -f src-tauri/icons/Square*Logo.png src-tauri/icons/StoreLogo.png
 
 dev:
 	npm run tauri:dev
