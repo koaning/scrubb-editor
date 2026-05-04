@@ -22,6 +22,7 @@ interface TreeNode {
   isDir: boolean;
   children: TreeNode[] | null;
   expanded: boolean;
+  parent: TreeNode | null;
 }
 
 export interface FileTreeOptions {
@@ -38,6 +39,8 @@ export class FileTree {
   private extensions: Set<string>;
   private root: TreeNode | null = null;
   private selectedPath: string | null = null;
+  private visibleNodes: TreeNode[] = [];
+  private focusedIndex = -1;
 
   constructor(opts: FileTreeOptions) {
     this.container = opts.container;
@@ -53,9 +56,11 @@ export class FileTree {
       isDir: true,
       children: null,
       expanded: true,
+      parent: null,
     };
     await this.loadChildren(node);
     this.root = node;
+    this.focusedIndex = -1;
     if (this.folderLabel) this.folderLabel.textContent = dirPath;
     this.render();
   }
@@ -67,6 +72,109 @@ export class FileTree {
 
   currentRoot(): string | null {
     return this.root?.path ?? null;
+  }
+
+  focus() {
+    this.container.focus();
+    if (this.focusedIndex < 0 || this.focusedIndex >= this.visibleNodes.length) {
+      const selectedIdx = this.selectedPath
+        ? this.visibleNodes.findIndex((n) => n.path === this.selectedPath)
+        : -1;
+      this.focusedIndex = selectedIdx >= 0 ? selectedIdx : (this.visibleNodes.length > 0 ? 0 : -1);
+      this.render();
+      this.scrollFocusedIntoView();
+    }
+  }
+
+  bindKeyboard() {
+    this.container.addEventListener("keydown", this.onKeyDown);
+  }
+
+  private onKeyDown = (e: KeyboardEvent) => {
+    if (this.visibleNodes.length === 0) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    const ensureFocus = () => {
+      if (this.focusedIndex < 0) this.focusedIndex = 0;
+    };
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        ensureFocus();
+        this.focusedIndex = Math.min(this.focusedIndex + 1, this.visibleNodes.length - 1);
+        this.render();
+        this.scrollFocusedIntoView();
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        ensureFocus();
+        this.focusedIndex = Math.max(this.focusedIndex - 1, 0);
+        this.render();
+        this.scrollFocusedIntoView();
+        break;
+      case "ArrowRight": {
+        e.preventDefault();
+        ensureFocus();
+        const node = this.visibleNodes[this.focusedIndex];
+        if (node.isDir) {
+          if (!node.expanded) {
+            void this.toggleDir(node);
+          } else if (this.focusedIndex < this.visibleNodes.length - 1) {
+            this.focusedIndex += 1;
+            this.render();
+            this.scrollFocusedIntoView();
+          }
+        }
+        break;
+      }
+      case "ArrowLeft": {
+        e.preventDefault();
+        ensureFocus();
+        const node = this.visibleNodes[this.focusedIndex];
+        if (node.isDir && node.expanded) {
+          void this.toggleDir(node);
+        } else if (node.parent && node.parent !== this.root) {
+          const parentIdx = this.visibleNodes.indexOf(node.parent);
+          if (parentIdx >= 0) {
+            this.focusedIndex = parentIdx;
+            this.render();
+            this.scrollFocusedIntoView();
+          }
+        }
+        break;
+      }
+      case "Enter": {
+        e.preventDefault();
+        ensureFocus();
+        const node = this.visibleNodes[this.focusedIndex];
+        if (node.isDir) {
+          void this.toggleDir(node);
+        } else {
+          this.selectedPath = node.path;
+          this.render();
+          this.onSelect(node.path);
+        }
+        break;
+      }
+      case "Home":
+        e.preventDefault();
+        this.focusedIndex = 0;
+        this.render();
+        this.scrollFocusedIntoView();
+        break;
+      case "End":
+        e.preventDefault();
+        this.focusedIndex = this.visibleNodes.length - 1;
+        this.render();
+        this.scrollFocusedIntoView();
+        break;
+    }
+  };
+
+  private scrollFocusedIntoView() {
+    const row = this.container.querySelector(".tree-row.focused") as HTMLElement | null;
+    row?.scrollIntoView({ block: "nearest" });
   }
 
   private async loadChildren(node: TreeNode) {
@@ -82,6 +190,7 @@ export class FileTree {
           isDir: e.is_dir,
           children: null,
           expanded: false,
+          parent: node,
         }));
     } catch (err) {
       console.error("read_dir failed:", err);
@@ -107,6 +216,7 @@ export class FileTree {
 
   private render() {
     this.container.innerHTML = "";
+    this.visibleNodes = [];
     if (!this.root) {
       const empty = document.createElement("div");
       empty.className = "tree-row";
@@ -119,13 +229,20 @@ export class FileTree {
     for (const child of this.root.children) {
       this.renderNode(child, 0);
     }
+    if (this.focusedIndex >= this.visibleNodes.length) {
+      this.focusedIndex = this.visibleNodes.length - 1;
+    }
   }
 
   private renderNode(node: TreeNode, depth: number) {
+    const index = this.visibleNodes.length;
+    this.visibleNodes.push(node);
+
     const row = document.createElement("div");
     row.className = "tree-row";
     if (node.isDir) row.classList.add("dir");
     if (node.path === this.selectedPath) row.classList.add("selected");
+    if (index === this.focusedIndex) row.classList.add("focused");
     row.style.paddingLeft = `${4 + depth * 14}px`;
 
     const chevron = document.createElement("span");
@@ -140,6 +257,7 @@ export class FileTree {
 
     row.title = node.path;
     row.addEventListener("click", () => {
+      this.focusedIndex = this.visibleNodes.indexOf(node);
       if (node.isDir) {
         void this.toggleDir(node);
       } else {

@@ -5,8 +5,11 @@ import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { ScrubDecorations } from "./scrub/decorations";
 import { ScrubController } from "./scrub/scrubController";
 import { FileTree } from "./sidebar/fileTree";
+import { attachSidebarResizer, loadSidebarWidth } from "./sidebar/sidebarResizer";
 import { TabBar } from "./tabs/tabBar";
 import "./styles.css";
+
+const SIDEBAR_COLLAPSED_KEY = "scrubb.sidebarCollapsed";
 
 self.MonacoEnvironment = {
   getWorker: () => new EditorWorker(),
@@ -38,6 +41,8 @@ monaco.editor.defineTheme("scrubb-dark", {
   },
 });
 
+const appEl = document.getElementById("app")!;
+const sidebarResizer = document.getElementById("sidebar-resizer")!;
 const editorHost = document.getElementById("editor-host")!;
 const sidebarList = document.getElementById("file-list")!;
 const folderName = document.getElementById("folder-name")!;
@@ -45,6 +50,35 @@ const openBtn = document.getElementById("open-folder")!;
 const tabBarHost = document.getElementById("tab-bar")!;
 const statusPath = document.getElementById("status-path")!;
 const statusTokens = document.getElementById("status-tokens")!;
+
+const savedWidth = loadSidebarWidth();
+if (savedWidth !== null) {
+  appEl.style.setProperty("--sidebar-width", `${savedWidth}px`);
+}
+if (localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1") {
+  appEl.classList.add("sidebar-collapsed");
+}
+
+attachSidebarResizer({ app: appEl, handle: sidebarResizer });
+
+function toggleSidebar() {
+  const collapsed = appEl.classList.toggle("sidebar-collapsed");
+  try {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
+  } catch {
+    // ignore
+  }
+}
+
+function focusSidebar() {
+  appEl.classList.remove("sidebar-collapsed");
+  try {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, "0");
+  } catch {
+    // ignore
+  }
+  tree.focus();
+}
 
 const editor = monaco.editor.create(editorHost, {
   value: "",
@@ -81,6 +115,7 @@ const tree = new FileTree({
   folderLabel: folderName,
   onSelect: (path) => void openFile(path),
 });
+tree.bindKeyboard();
 
 const scrub = new ScrubController({
   editor,
@@ -180,6 +215,12 @@ window.addEventListener("keydown", (e) => {
   } else if (e.code === "KeyS" && !e.shiftKey) {
     e.preventDefault();
     void requestSave();
+  } else if (e.code === "KeyB" && !e.shiftKey && !e.altKey) {
+    e.preventDefault();
+    toggleSidebar();
+  } else if (e.code === "Digit0" && !e.shiftKey && !e.altKey) {
+    e.preventDefault();
+    focusSidebar();
   }
 });
 
