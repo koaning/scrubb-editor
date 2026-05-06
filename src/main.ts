@@ -8,7 +8,6 @@ import { ScrubController } from "./scrub/scrubController";
 import { FileTree } from "./sidebar/fileTree";
 import { attachSidebarResizer, loadSidebarWidth } from "./sidebar/sidebarResizer";
 import { TabBar } from "./tabs/tabBar";
-import "./styles.css";
 
 const SIDEBAR_COLLAPSED_KEY = "scrubb.sidebarCollapsed";
 
