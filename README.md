@@ -21,6 +21,18 @@ Because the build is unsigned, macOS will Gatekeeper-block the first launch. Rig
 
 Prefer a `.dmg` installer? Run `npm run tauri:build` (or `make build`) — macOS will prompt once for Finder Automation permission so the DMG window can be styled. The `.dmg` lands in `src-tauri/target/release/bundle/dmg/`.
 
+### Adding a `scrubb` CLI shortcut
+
+Symlink the bundled binary onto your `PATH` so you can launch the editor from any terminal:
+
+```
+sudo ln -s /Applications/scrubb.app/Contents/MacOS/scrubb /usr/local/bin/scrubb
+```
+
+Then `scrubb .` opens the current folder, `scrubb ~/code/myproject` opens that folder, and so on. Append `&` if you want the terminal prompt back immediately (`scrubb . &`).
+
+If `/usr/local/bin` isn't on your `PATH` (Apple Silicon Homebrew uses `/opt/homebrew/bin` instead), substitute a directory that is.
+
 ## Prerequisites
 
 - Node 18+ and npm
