@@ -4,6 +4,23 @@ A code editor with Bret-Victor-style scrubbable numeric literals, built on Tauri
 
 Drag horizontally on a number in the editor to scrub its value live. Hold Shift while dragging for finer steps.
 
+## Installing
+
+There are no prebuilt downloads yet, so you build it locally from this repo.
+
+```
+git clone https://github.com/koaning/scrubb-editor.git
+cd scrubb-editor
+npm install
+npm run tauri:build:app    # or: make app
+```
+
+This produces `src-tauri/target/release/bundle/macos/scrubb.app`. Drag it into `/Applications`.
+
+Because the build is unsigned, macOS will Gatekeeper-block the first launch. Right-click the app → **Open** → **Open** to whitelist it once; subsequent launches work normally.
+
+Prefer a `.dmg` installer? Run `npm run tauri:build` (or `make build`) — macOS will prompt once for Finder Automation permission so the DMG window can be styled. The `.dmg` lands in `src-tauri/target/release/bundle/dmg/`.
+
 ## Prerequisites
 
 - Node 18+ and npm
@@ -54,18 +71,3 @@ To cut a release:
 3. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`.
 4. Wait for the workflow in the **Actions** tab — Linux ~5 min, macOS ~10–12 min, Windows ~7 min.
 5. Edit the draft release on GitHub, write release notes, and publish.
-
-### macOS signing & notarization (optional but recommended)
-
-Without signing, macOS users have to right-click → Open and bypass Gatekeeper. To produce a notarized DMG, add these six secrets to the repo (Settings → Secrets and variables → Actions):
-
-| Secret | What it is |
-| --- | --- |
-| `APPLE_CERTIFICATE` | `.p12` of your Developer ID Application cert, base64-encoded (`base64 -i cert.p12 \| pbcopy`) |
-| `APPLE_CERTIFICATE_PASSWORD` | Password used when exporting the `.p12` |
-| `APPLE_SIGNING_IDENTITY` | e.g. `Developer ID Application: Your Name (TEAMID)` |
-| `APPLE_ID` | Apple Developer account email |
-| `APPLE_PASSWORD` | App-specific password from appleid.apple.com |
-| `APPLE_TEAM_ID` | 10-character team ID from the Apple Developer portal |
-
-The workflow runs even when these are unset — it just skips signing, producing an unsigned DMG. Linux and Windows builds are always unsigned.
