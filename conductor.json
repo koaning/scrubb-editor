@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "init": "npm i",
+    "run": "npm run tauri:dev"
+  }
+}
