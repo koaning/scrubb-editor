@@ -4,6 +4,17 @@ A code editor with Bret-Victor-style scrubbable numeric literals, built on Tauri
 
 Drag horizontally on a number in the editor to scrub its value live. Hold Shift while dragging for finer steps.
 
+## Demo
+
+See it in motion at **[koaning.github.io/scrubb-editor](https://koaning.github.io/scrubb-editor/)**, or right here:
+
+<video src="docs/scrubbing-demo.mp4" controls width="720">
+  Your browser does not render embedded video — open
+  [koaning.github.io/scrubb-editor](https://koaning.github.io/scrubb-editor/) instead.
+</video>
+
+The project page is built straight from `docs/` — to publish it, enable GitHub Pages in the repo settings with **Source: Deploy from a branch**, **Branch: `main` / `/docs`**.
+
 ## Installing
 
 There are no prebuilt downloads yet, so you build it locally from this repo.
