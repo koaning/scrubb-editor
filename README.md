@@ -1,6 +1,10 @@
+<p align="center">
+  <img src="src-tauri/icons/128x128.png" alt="scrubb app icon" width="96" height="96">
+</p>
+
 # scrubb
 
-A code editor with Bret-Victor-style scrubbable numeric literals, built on Tauri + Vite + TypeScript + Monaco.
+A code editor with Bret-Victor-style scrubbable numeric literals, built on Tauri, Vite, TypeScript, and Monaco.
 
 Drag horizontally on a number in the editor to scrub its value live. Hold Shift while dragging for finer steps.
 
@@ -9,88 +13,35 @@ Drag horizontally on a number in the editor to scrub its value live. Hold Shift 
 See it in motion at **[koaning.github.io/scrubb-editor](https://koaning.github.io/scrubb-editor/)**, or right here:
 
 <video src="docs/scrubbing-demo.mp4" controls width="720">
-  Your browser does not render embedded video — open
+  Your browser does not render embedded video. Open
   [koaning.github.io/scrubb-editor](https://koaning.github.io/scrubb-editor/) instead.
 </video>
 
-The project page is built straight from `docs/` — to publish it, enable GitHub Pages in the repo settings with **Source: Deploy from a branch**, **Branch: `main` / `/docs`**.
+## Install
 
-## Installing
+There are no prebuilt downloads yet, so build the app locally:
 
-There are no prebuilt downloads yet, so you build it locally from this repo.
-
-```
+```sh
 git clone https://github.com/koaning/scrubb-editor.git
 cd scrubb-editor
 npm install
-npm run tauri:build:app    # or: make app
+npm run tauri:build:app
 ```
 
 This produces `src-tauri/target/release/bundle/macos/scrubb.app`. Drag it into `/Applications`.
 
-Because the build is unsigned, macOS will Gatekeeper-block the first launch. Right-click the app → **Open** → **Open** to whitelist it once; subsequent launches work normally.
+Because the local build is unsigned, macOS will block the first launch. Right-click the app, choose **Open**, then confirm **Open** once.
 
-Prefer a `.dmg` installer? Run `npm run tauri:build` (or `make build`) — macOS will prompt once for Finder Automation permission so the DMG window can be styled. The `.dmg` lands in `src-tauri/target/release/bundle/dmg/`.
+## CLI
 
-### Adding a `scrubb` CLI shortcut
+To launch scrubb from a terminal, symlink the bundled binary onto your `PATH`:
 
-Symlink the bundled binary onto your `PATH` so you can launch the editor from any terminal:
-
-```
+```sh
 sudo ln -s /Applications/scrubb.app/Contents/MacOS/scrubb /usr/local/bin/scrubb
 ```
 
-Then `scrubb .` opens the current folder, `scrubb ~/code/myproject` opens that folder, and so on. Append `&` if you want the terminal prompt back immediately (`scrubb . &`).
+Then `scrubb .` opens the current folder.
 
-If `/usr/local/bin` isn't on your `PATH` (Apple Silicon Homebrew uses `/opt/homebrew/bin` instead), substitute a directory that is.
+## Development
 
-## Prerequisites
-
-- Node 18+ and npm
-- Rust toolchain (`rustup`, `cargo`) — Rust ≥ 1.77
-- macOS: Xcode Command Line Tools (for Tauri builds)
-
-## Commands
-
-| Command | What it does |
-| --- | --- |
-| `npm install` | Install JS dependencies |
-| `npm run dev` | Start the Vite dev server at `http://localhost:1420` (browser-only, no native shell) |
-| `npm run tauri:dev` | Run the full desktop app with hot reload |
-| `npm run tauri:dev:here` | Same as `tauri:dev`, but auto-opens the current working directory as the workspace folder |
-| `npm run build` | Production build of the frontend into `dist/` |
-| `npm run tauri:build` | Build a release desktop binary (produces `.app` + `.dmg`; the `.dmg` step needs Finder Automation permission — see [TODO.md](TODO.md)) |
-| `npm run tauri:build:app` | Build only the `.app` bundle, skipping the DMG/AppleScript step |
-| `npm test` | Run unit tests (vitest) |
-| `npm run test:watch` | Watch mode for vitest |
-
-## Opening a folder at launch
-
-scrubb can open a folder automatically on startup, picked from (in order):
-
-1. The first non-flag command-line argument: `scrubb /path/to/folder`
-2. The `SCRUBB_INITIAL_FOLDER` environment variable
-
-The path must be an existing directory — anything else is ignored and the app starts on the empty welcome state. `npm run tauri:dev:here` uses the env-var form to pre-load the project root during development.
-
-## Live-running a Python file while you scrub
-
-To see the effect of scrubbing on a script in real time, run a watcher in a terminal alongside scrubb. The simplest setup uses [`watchfiles`](https://github.com/samuelcolvin/watchfiles) via `uv`:
-
-```
-uvx watchfiles "python demofile.py" demofile.py
-```
-
-The first argument is the command to re-run; the second is the path to watch (a file or directory). Every save in scrubb triggers a fresh run, so dragging on a number gives you a tight scrub → save → re-execute loop.
-
-## Releasing
-
-Cross-platform installers are built by the `release` GitHub Action (`.github/workflows/release.yml`). It runs on macOS (universal arm64 + x86_64), Linux (Ubuntu 22.04), and Windows, and attaches the artifacts to a draft GitHub Release.
-
-To cut a release:
-
-1. Bump the version in three places: `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`.
-2. Commit and push to `main`.
-3. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`.
-4. Wait for the workflow in the **Actions** tab — Linux ~5 min, macOS ~10–12 min, Windows ~7 min.
-5. Edit the draft release on GitHub, write release notes, and publish.
+Prerequisites, commands, local workflow notes, and release steps live in [developers.md](developers.md).
