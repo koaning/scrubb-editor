@@ -46,6 +46,10 @@ export class ScrubController {
     document.removeEventListener("mouseup", this.onDocMouseUp, true);
   }
 
+  isActive(): boolean {
+    return this.isScrubbing;
+  }
+
   private tokenAt(position: monaco.IPosition | null): NumberToken | null {
     if (!position) return null;
     const model = this.opts.editor.getModel();
