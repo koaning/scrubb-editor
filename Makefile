@@ -1,16 +1,17 @@
 ICON_SRC := src-tauri/icons/logo-c-double-b.svg
 ICON_OUT := src-tauri/icons/icon.icns
 
-.PHONY: help dev build app test icons clean
+.PHONY: help dev build app install test icons clean
 
 help:
 	@echo "Targets:"
-	@echo "  dev    - run the Tauri app in dev mode"
-	@echo "  build  - build the Tauri app (all bundle targets)"
-	@echo "  app    - build only the macOS .app bundle"
-	@echo "  test   - run vitest"
-	@echo "  icons  - regenerate icon files from $(ICON_SRC)"
-	@echo "  clean  - remove dist/ and src-tauri/target/"
+	@echo "  dev      - run the Tauri app in dev mode"
+	@echo "  build    - build the Tauri app (all bundle targets)"
+	@echo "  app      - build only the macOS .app bundle"
+	@echo "  install  - build the .app and copy it to /Applications"
+	@echo "  test     - run vitest"
+	@echo "  icons    - regenerate icon files from $(ICON_SRC)"
+	@echo "  clean    - remove dist/ and src-tauri/target/"
 
 icons: $(ICON_OUT)
 
@@ -30,6 +31,10 @@ build: icons
 
 app: icons
 	npm run tauri:build:app
+
+install: app
+	rm -rf /Applications/scrubb.app
+	cp -R src-tauri/target/release/bundle/macos/scrubb.app /Applications/
 
 test:
 	npm test

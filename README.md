@@ -23,10 +23,10 @@ There are no prebuilt downloads yet, so you build it locally from this repo.
 git clone https://github.com/koaning/scrubb-editor.git
 cd scrubb-editor
 npm install
-npm run tauri:build:app    # or: make app
+npm run tauri:install    # or: make install
 ```
 
-This produces `src-tauri/target/release/bundle/macos/scrubb.app`. Drag it into `/Applications`.
+This builds `src-tauri/target/release/bundle/macos/scrubb.app` and copies it to `/Applications` (overwriting any existing `scrubb.app` there). To build without installing, run `npm run tauri:build:app` (or `make app`) and drag the resulting bundle in yourself.
 
 Because the build is unsigned, macOS will Gatekeeper-block the first launch. Right-click the app → **Open** → **Open** to whitelist it once; subsequent launches work normally.
 
@@ -61,6 +61,7 @@ If `/usr/local/bin` isn't on your `PATH` (Apple Silicon Homebrew uses `/opt/home
 | `npm run build` | Production build of the frontend into `dist/` |
 | `npm run tauri:build` | Build a release desktop binary (produces `.app` + `.dmg`; the `.dmg` step needs Finder Automation permission — see [TODO.md](TODO.md)) |
 | `npm run tauri:build:app` | Build only the `.app` bundle, skipping the DMG/AppleScript step |
+| `npm run tauri:install` | Build the `.app` and copy it to `/Applications` (replacing any existing `scrubb.app`) |
 | `npm test` | Run unit tests (vitest) |
 | `npm run test:watch` | Watch mode for vitest |
 

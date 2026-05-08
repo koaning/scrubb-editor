@@ -12,6 +12,7 @@
     "tauri:dev:here": "SCRUBB_INITIAL_FOLDER=\"$PWD\" tauri dev",
     "tauri:build": "tauri build",
     "tauri:build:app": "tauri build --bundles app",
+    "tauri:install": "npm run tauri:build:app && rm -rf /Applications/scrubb.app && cp -R src-tauri/target/release/bundle/macos/scrubb.app /Applications/",
     "test": "vitest run",
     "test:watch": "vitest"
   },

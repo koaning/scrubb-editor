@@ -99,6 +99,22 @@ const decorations = new ScrubDecorations(editor);
 let saveInFlight = false;
 let pendingSave = false;
 const lastSavedContent = new Map<string, string>();
+let pendingReload: { path: string; contents: string } | null = null;
+
+function applyReload(path: string, contents: string) {
+  const model = tabBar.findModel(path);
+  if (!model) return;
+  if (model.getValue() === contents) return;
+  const range = model.getFullModelRange();
+  model.pushStackElement();
+  model.pushEditOperations(
+    [],
+    [{ range, text: contents }],
+    () => null,
+  );
+  model.pushStackElement();
+  lastSavedContent.set(path, contents);
+}
 
 const tabBar = new TabBar({
   container: tabBarHost,
@@ -133,6 +149,10 @@ const scrub = new ScrubController({
   onScrubEnd: () => {
     refreshDecorations();
     requestSave();
+    if (pendingReload) {
+      applyReload(pendingReload.path, pendingReload.contents);
+      pendingReload = null;
+    }
   },
   onHoverChange: (tok) => {
     if (tok) {
@@ -244,18 +264,11 @@ interface FileChangedPayload {
 void listen<FileChangedPayload>("file-changed", (e) => {
   const { path, kind, contents } = e.payload;
   if (kind !== "modified") return;
-  const model = tabBar.findModel(path);
-  if (!model) return;
-  if (model.getValue() === contents) return;
-  const range = model.getFullModelRange();
-  model.pushStackElement();
-  model.pushEditOperations(
-    [],
-    [{ range, text: contents }],
-    () => null,
-  );
-  model.pushStackElement();
-  lastSavedContent.set(path, contents);
+  if (scrub.isActive() && path === tabBar.activePath()) {
+    pendingReload = { path, contents };
+    return;
+  }
+  applyReload(path, contents);
 });
 
 void (async () => {
