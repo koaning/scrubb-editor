@@ -10,12 +10,9 @@ Drag horizontally on a number in the editor to scrub its value live. Hold Shift 
 
 ## Demo
 
-See it in motion at **[koaning.github.io/scrubb-editor](https://koaning.github.io/scrubb-editor/)**, or right here:
+[![scrubb demo](docs/scrubbing-demo.gif)](https://koaning.github.io/scrubb-editor/)
 
-<video src="docs/scrubbing-demo.mp4" controls width="720">
-  Your browser does not render embedded video. Open
-  [koaning.github.io/scrubb-editor](https://koaning.github.io/scrubb-editor/) instead.
-</video>
+The full video is on **[koaning.github.io/scrubb-editor](https://koaning.github.io/scrubb-editor/)**.
 
 ## Install
 
