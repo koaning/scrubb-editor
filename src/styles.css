@@ -216,6 +216,35 @@ body.sidebar-resizing * { cursor: ew-resize !important; user-select: none; }
   cursor: ew-resize !important;
 }
 
+.colorizable {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(180, 120, 255, 0.7);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.color-picker-popup {
+  position: fixed;
+  z-index: 10000;
+  background: #1c2230;
+  border: 1px solid #2a3242;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.color-picker-swatch {
+  width: 140px;
+  height: 100px;
+  border: 1px solid #2a3242;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
 #empty-state {
   position: absolute;
   inset: 0;

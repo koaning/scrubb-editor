@@ -3,6 +3,7 @@ import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
+import { ColorPickerController } from "./scrub/colorPickerController";
 import { ScrubDecorations } from "./scrub/decorations";
 import { ScrubController } from "./scrub/scrubController";
 import { FileTree } from "./sidebar/fileTree";
@@ -96,6 +97,7 @@ const editor = monaco.editor.create(editorHost, {
 editor.setModel(null);
 
 const decorations = new ScrubDecorations(editor);
+const colorPicker = new ColorPickerController({ editor });
 let saveInFlight = false;
 let pendingSave = false;
 const lastSavedContent = new Map<string, string>();
@@ -145,6 +147,7 @@ tree.bindKeyboard();
 const scrub = new ScrubController({
   editor,
   getTokens: () => decorations.tokens(),
+  isColorAt: (pos) => colorPicker.isColorAt(pos),
   onLiveChange: () => requestSave(),
   onScrubEnd: () => {
     refreshDecorations();
@@ -159,7 +162,8 @@ const scrub = new ScrubController({
       statusTokens.textContent = `hover: ${tok.text} (drag to scrub)`;
     } else {
       const n = decorations.tokens().length;
-      statusTokens.textContent = `${n} scrubbables`;
+      const c = colorPicker.tokens().length;
+      statusTokens.textContent = `${n} scrubbable${n !== 1 ? "s" : ""}${c > 0 ? ` · ${c} color${c !== 1 ? "s" : ""}` : ""}`;
     }
   },
 });
@@ -179,7 +183,9 @@ function refreshDecorations() {
     return;
   }
   const tokens = decorations.rescan(model);
-  statusTokens.textContent = `${tokens.length} scrubbables`;
+  const colors = colorPicker.rescan(model);
+  const colorCount = colors.length;
+  statusTokens.textContent = `${tokens.length} scrubbable${tokens.length !== 1 ? "s" : ""}${colorCount > 0 ? ` · ${colorCount} color${colorCount !== 1 ? "s" : ""}` : ""}`;
 }
 
 async function requestSave() {

@@ -7,6 +7,7 @@ export interface ScrubControllerOptions {
   onLiveChange: () => void;
   onScrubEnd: () => void;
   onHoverChange?: (token: NumberToken | null) => void;
+  isColorAt?: (position: monaco.IPosition | null) => boolean;
 }
 
 export class ScrubController {
@@ -63,6 +64,7 @@ export class ScrubController {
 
   private onMonacoMouseDown = (e: monaco.editor.IEditorMouseEvent) => {
     if (!e.event.leftButton) return;
+    if (this.opts.isColorAt?.(e.target.position)) return;
     const token = this.tokenAt(e.target.position);
     if (!token) return;
 
