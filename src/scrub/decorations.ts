@@ -1,5 +1,6 @@
 import * as monaco from "monaco-editor";
 import { scanNumbers, NumberToken } from "./numberScanner";
+import { scanColors } from "./colorScanner";
 
 export class ScrubDecorations {
   private collection: monaco.editor.IEditorDecorationsCollection;
@@ -12,8 +13,12 @@ export class ScrubDecorations {
   rescan(model: monaco.editor.ITextModel): NumberToken[] {
     const source = model.getValue();
     const exclude = stringAndCommentRanges(source, model.getLanguageId());
+    const colors = scanColors(source);
+    const colorOverlaps = colors.map((c) => ({ start: c.start, end: c.end }));
     const all = scanNumbers(source);
-    this.currentTokens = all.filter((t) => !overlapsAny(t, exclude));
+    this.currentTokens = all.filter(
+      (t) => !overlapsAny(t, exclude) && !overlapsAny(t, colorOverlaps)
+    );
 
     const decos: monaco.editor.IModelDeltaDecoration[] = this.currentTokens.map(
       (t) => ({
