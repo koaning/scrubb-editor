@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members = ["scrub-core", "app"]
+
+# The gpui/gpui_platform specs MUST match gpui-component's own declarations *exactly*
+# (same git url, no rev). gpui-component tracks zed's default branch unpinned; Cargo treats
+# a rev-pinned git dep as a different source than a branch dep even at the same commit, so
+# pinning here produces TWO copies of gpui and "trait Render not satisfied" mismatches.
+# Reproducibility comes from the committed Cargo.lock instead.
+[workspace.dependencies]
+gpui = { git = "https://github.com/zed-industries/zed", version = "0.2.2", features = ["profiler"] }
+gpui_platform = { git = "https://github.com/zed-industries/zed", features = ["font-kit", "x11", "wayland", "runtime_shaders"] }
+gpui-component = { git = "https://github.com/longbridge/gpui-component", rev = "4377be367a0a427cea796fe946679b641e9a8fc4" }
+gpui-component-assets = { git = "https://github.com/longbridge/gpui-component", rev = "4377be367a0a427cea796fe946679b641e9a8fc4" }
+
+# Debug builds of the GPUI stack produce multi-GB of DWARF in target/. Line-tables-only
+# keeps usable backtraces while cutting most of that weight.
+[profile.dev]
+debug = "line-tables-only"
+
+# Strip symbols for a realistic shipping-binary size.
+[profile.release]
+strip = true

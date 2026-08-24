@@ -1,0 +1,6 @@
+# Build output — the workspace target dir (and any stray per-crate one).
+/target
+*/target
+
+# Keep Cargo.lock committed: this spike pins an unpinned upstream (gpui-component tracks
+# zed main), so the lockfile is what makes the build reproducible.

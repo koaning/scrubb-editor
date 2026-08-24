@@ -1,0 +1,5 @@
+# GPUI (via the pinned zed rev) requires the stabilized `hint::cold_path`, so match the
+# Rust version zed itself pins at rev 8b1497d.
+[toolchain]
+channel = "1.97.1"
+profile = "minimal"
