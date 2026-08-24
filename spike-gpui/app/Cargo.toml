@@ -1,0 +1,20 @@
+[package]
+name = "scrubb-spike"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "scrubb-spike"
+path = "src/main.rs"
+
+[dependencies]
+scrub-core = { path = "../scrub-core" }
+gpui = { workspace = true }
+gpui_platform = { workspace = true }
+# `tree-sitter-languages` compiles in the tree-sitter grammars (rust, python, js/ts, go, …);
+# without it there is NO syntax highlighting — the feature is opt-in, gpui-component has no
+# default features.
+gpui-component = { workspace = true, features = ["tree-sitter-languages"] }
+gpui-component-assets = { workspace = true }
+anyhow = "1"
